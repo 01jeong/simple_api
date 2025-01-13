@@ -1,16 +1,19 @@
 import { StatusCodes } from 'http-status-codes';
 
 import userService from '../services/user.service';
+import pino from 'pino';
+
+const logger = pino()
 
 const STATUS = {
   success: 'OK',
   failure: 'NO',
 };
 
-/** * 
- * @param {*} req 
- * @param {*} res 
- * @returns 
+/** *
+ * @param {*} req
+ * @param {*} res
+ * @returns
  */
 const getAllUsers = (req, res) => {
   const users = userService.getAllUsers();
@@ -27,9 +30,9 @@ const getAllUsers = (req, res) => {
 
 /**
  * Retrieve a user
- * @param {*} req 
- * @param {*} res 
- * @returns 
+ * @param {*} req
+ * @param {*} res
+ * @returns
  */
 
 const getUser = (req, res) => {
@@ -38,10 +41,8 @@ const getUser = (req, res) => {
   const user = userService.getUser(id);
 
   if (user) {
-    return res.status(StatusCodes.OK).send({
-      status: STATUS.success,
-      user,
-    });
+    logger.info(`Retrieving user with id: ${id}`);
+    return res.status(StatusCodes.OK).send(user);
   }
 
   return res.status(StatusCodes.NOT_FOUND).send({
@@ -52,15 +53,16 @@ const getUser = (req, res) => {
 
 /**
  * Add a user
- * @param {*} req 
- * @param {*} res 
- * @returns 
+ * @param {*} req
+ * @param {*} res
+ * @returns
  */
 const addUser = (req, res) => {
   const { body: user } = req;
 
   const addedUser = userService.addUser(user);
 
+  logger.info('Creating a user');
   return res.status(StatusCodes.CREATED).send({
     status: STATUS.success,
     user: addedUser,
@@ -69,9 +71,9 @@ const addUser = (req, res) => {
 
 /**
  * Update a user
- * @param {*} req 
- * @param {*} res 
- * @returns 
+ * @param {*} req
+ * @param {*} res
+ * @returns
  */
 const updateUser = (req, res) => {
   const { body: user } = req;
@@ -85,6 +87,7 @@ const updateUser = (req, res) => {
       status: STATUS.success,
       user: updatedUser,
     });
+    logger.info('Updating a user');
   } else {
     return res.status(StatusCodes.NOT_FOUND).send({
       status: STATUS.failure,
@@ -95,9 +98,9 @@ const updateUser = (req, res) => {
 
 /**
  * Remove a user
- * @param {*} req 
- * @param {*} res 
- * @returns 
+ * @param {*} req
+ * @param {*} res
+ * @returns
  */
 const removeUser = (req, res) => {
   const { params } = req;
@@ -111,6 +114,8 @@ const removeUser = (req, res) => {
       status: STATUS.success,
       message: `User ${id} has been deleted.`,
     });
+
+    logger.info(`Removing ${id} user`);
   } else {
     return res.status(StatusCodes.NOT_FOUND).send({
       status: STATUS.failure,
